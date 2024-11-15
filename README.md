@@ -31,7 +31,7 @@ The Daily Deli is a Java-based Point of Sales (POS) application designed for DEL
 5. Pricing Overview:
 * Sandwiches:
     * 4": $5.50, 8": $7.00, 12": $8.50.
-* Meats: $1.00-$3.00 based on size; extra portions available.
+* Meats: $1.00-$5.00 based on size; extra portions available.
 * Cheeses: $0.75-$2.25 based on size; extra portions available.
 * Drinks: Small $2.00, Medium $2.50, Large $3.00.
 * Chips: $1.50.
