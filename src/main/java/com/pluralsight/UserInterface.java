@@ -5,169 +5,149 @@ import java.util.Scanner;
 public class UserInterface {
     private Scanner scanner;
 
+    // ANSI Escape codes for colors
+    private static final String RESET = "\u001B[0m";
+    private static final String RED = "\u001B[31m";
+    private static final String GREEN = "\u001B[32m";
+    private static final String CYAN = "\u001B[36m";
+    private static final String BLUE = "\u001B[34m";
+
+    // Box Drawing Characters
+    private static final String BOX_BORDER = "╔═════════════════════════════════╗";
+    private static final String BOX_BOTTOM = "╚═════════════════════════════════╝";
+
     public UserInterface() {
         this.scanner = new Scanner(System.in);
     }
 
-    //Displays the main meu and handles user's choice
     public void displayMenu() {
-        Order currentOrder = null;
         boolean running = true;
 
         while (running) {
-            System.out.println("Welcome to the Daily Deli!");
-            System.out.println("1) New Order");
-            System.out.println("0) Exit");
+            printTitle("The Daily Deli");
+            System.out.println(CYAN + BOX_BORDER + RESET);
+            System.out.println(GREEN + "1) New Order" + RESET);
+            System.out.println(RED + "0) Exit" + RESET);
+            System.out.println(CYAN + BOX_BOTTOM + RESET);
 
             int choice = scanner.nextInt();
             scanner.nextLine();
 
             switch (choice) {
                 case 1:
-                    currentOrder = new Order();
+                    Order currentOrder = new Order();
                     processOrder(currentOrder);
                     break;
                 case 0:
+                    System.out.println(GREEN + "Thank you for visiting The Daily Deli!" + RESET);
                     running = false;
-                    System.out.println("Thank you for visiting The Daily Deli!");
                     break;
                 default:
-                    System.out.println("Invalid Choice. Please try again.");
+                    System.out.println(RED + "Invalid option. Please try again." + RESET);
             }
         }
     }
 
-    //Guides the user through adding items to their orders
-    private void processOrder(Order order) {
-        boolean ordering = true;
-
-        while (ordering) {
-            System.out.println("1) Add Sandwich");
-            System.out.println("2) Add Drink");
-            System.out.println("3) Add Chips");
-            System.out.println("4) Checkout");
-            System.out.println("0) Cancel Order");
-
-            int choice = scanner.nextInt();
-            scanner.nextLine();
-
-            switch (choice) {
-                case 1:
-                    order.addSandwich(createSandwich());
-                    break;
-                case 2:
-                    order.addDrink(createDrink());
-                    break;
-                case 3:
-                    System.out.println("Enter chip type: ");
-                    String chipType = scanner.nextLine();
-                    order.addChips(chipType);
-                    break;
-                case 4:
-                    Receipt.saveReceipt(order);
-                    ordering = false;
-                    break;
-                case 0:
-                    System.out.println("Order Cancelled.");
-                    ordering = false;
-                    break;
-                default:
-                    System.out.println("Invalid choice. Try again.");
-            }
-        }
-    }
-
-    //Create a new sandwich based on user input
-    private Sandwich createSandwich() {
-        System.out.println("Enter bread type: ");
-        String bread = scanner.nextLine();
-
-        System.out.println("Enter sandwich size (4\", 8\", 12\"): ");
-        String size = scanner.nextLine();
-
+    private void processOrder(Order currentOrder) {
+        // Process the order in a fancy manner
+        String bread = getBreadChoice();
+        String size = getSizeChoice();
         Sandwich sandwich = new Sandwich(bread, size);
 
-        //Adds toppings based on user input
-        boolean addingToppings = true;
-        while (addingToppings) {
-            System.out.println("Select a topping to add:");
-            System.out.println("1) Lettuce");
-            System.out.println("2) Tomato");
-            System.out.println("3) Onions");
-            System.out.println("4) Cucumbers");
-            System.out.println("5) Jalapenos");
-            System.out.println("6) Chipotle Sauce");
-            System.out.println("7) BBQ Sauce");
-            System.out.println("8) Honey Mustard");
-            System.out.println("9) Mayo");
-            System.out.println("10) Guacamole (Premium)");
-            System.out.println("11) Pickle Chips (Premium)");
-            System.out.println("12) Swiss Cheese (Premium)");
-            System.out.println("13) Provolone Cheese (Premium)");
-            System.out.println("14) Cheddar Cheese (Premium)");
-            System.out.println("15) Beef Bacon (Premium)");
-            System.out.println("16) Chicken (Premium)");
-            System.out.println("17) Steak (Premium)");
-            System.out.println("18) Lamb (Premium)");
-            System.out.println("0) Finish adding toppings");
+        // Add toppings
+        addToppings(sandwich);
+        currentOrder.addSandwich(sandwich);
 
-            int toppingChoice = scanner.nextInt();
-            scanner.nextLine();
+        // Confirm sandwich creation
+        System.out.println(CYAN + "Your sandwich has been created!" + RESET);
+        System.out.println(sandwich.getDetails());
 
-            if (toppingChoice == 0) {
-                addingToppings = false;
-            } else {
-                Topping topping = getToppingFromChoice(toppingChoice);
+        // Add chips and drinks, if desired
+        String addChips = getUserInput("Would you like to add chips? (yes/no): ");
+        if (addChips.equalsIgnoreCase("yes")) {
+            currentOrder.addChips();
+        }
+
+        String addDrink = getUserInput("Would you like to add a drink? (yes/no): ");
+        if (addDrink.equalsIgnoreCase("yes")) {
+            String drinkSize = getDrinkSizeChoice();
+            currentOrder.addDrink(drinkSize); // Pass the drink size here
+        }
+
+        // Display the loading animation
+        displayLoading();
+
+        // Print the final receipt
+        Receipt.saveReceipt(currentOrder);
+    }
+
+    private String getDrinkSizeChoice() {
+        System.out.println(CYAN + "Choose your drink size: Small, Medium, Large" + RESET);
+        return getUserInput("Enter drink size: ");
+    }
+
+    private String getBreadChoice() {
+        System.out.println(CYAN + "Choose your bread: White, Wheat, Rye, Wrap" + RESET);
+        return getUserInput("Enter bread choice:");
+    }
+
+    private String getSizeChoice() {
+        System.out.println(CYAN + "Choose your sandwich size (4\", 8\", 12\")" + RESET);
+        return getUserInput("Enter size: ");
+    }
+
+    private void addToppings(Sandwich sandwich) {
+        String addToppings;
+        do {
+            System.out.println(CYAN + "Choose your toppings (enter 'done' to finish):" + RESET);
+            System.out.println(GREEN + "Available Toppings:" + RESET);
+            for (Topping topping : Topping.getAvailableToppings()) {
+                System.out.println(topping.getName() + (topping.isPremium() ? " (Premium)" : ""));
+            }
+
+            addToppings = getUserInput("Enter toppings or 'done': ");
+            if (!addToppings.equalsIgnoreCase("done")) {
+                Topping topping = getToppingByName(addToppings);
                 if (topping != null) {
                     sandwich.addTopping(topping);
-                    System.out.println(topping.getName() + " added to your sandwich!");
+                    System.out.println(GREEN + "Topping added: " + topping.getName() + RESET);
                 } else {
-                    System.out.println("Invalid topping choice. Please try again.");
+                    System.out.println(RED + "Invalid topping. Try again." + RESET);
                 }
             }
-        }
-
-        //Asks if you want your sandwich toasted
-        System.out.println("Do you want the sandwich toasted? (yes/no): ");
-        String toasted = scanner.nextLine();
-        sandwich.setToasted(toasted.equalsIgnoreCase("yes"));
-
-        return sandwich;
+        } while (!addToppings.equalsIgnoreCase("done"));
     }
 
-    //Maps user choice to a topping
-    private Topping getToppingFromChoice(int choice) {
-        switch (choice) {
-            case 1: return Topping.getAvailableToppings().get(0); //Lettuce
-            case 2: return Topping.getAvailableToppings().get(1); //Tomato
-            case 3: return Topping.getAvailableToppings().get(2); //Onions
-            case 4: return Topping.getAvailableToppings().get(3); //Cucumbers
-            case 5: return Topping.getAvailableToppings().get(4); //Jalapenos
-            case 6: return Topping.getAvailableToppings().get(5); //Chipotle Sauce
-            case 7: return Topping.getAvailableToppings().get(6); //BBQ Sauce
-            case 8: return Topping.getAvailableToppings().get(7); //Honey Mustard
-            case 9: return Topping.getAvailableToppings().get(8); //Mayo
-            case 10: return Topping.getAvailableToppings().get(9); //Guacamole
-            case 11: return Topping.getAvailableToppings().get(10); //Pickle Chips
-            case 12: return Topping.getAvailableToppings().get(11); //Swiss Cheese
-            case 13: return Topping.getAvailableToppings().get(12); //Provolone Cheese
-            case 14: return Topping.getAvailableToppings().get(13); //Cheddar Cheese
-            case 15: return Topping.getAvailableToppings().get(14); //Beef Bacon
-            case 16: return Topping.getAvailableToppings().get(15); //Chicken
-            case 17: return Topping.getAvailableToppings().get(16); //Steak
-            case 18: return Topping.getAvailableToppings().get(17); //Lamb
-            default: return null;
+    private Topping getToppingByName(String name) {
+        for (Topping topping : Topping.getAvailableToppings()) {
+            if (topping.getName().equalsIgnoreCase(name)) {
+                return topping;
+            }
         }
+        return null;
     }
 
-    //Creates a new drink based on user input
-    private Drink createDrink() {
-        System.out.print("Enter drink size (Small, Medium, Large): ");
-        String size = scanner.nextLine();
+    private String getUserInput(String prompt) {
+        System.out.print(prompt);
+        return scanner.nextLine();
+    }
 
-        System.out.println("Enter drink flavor: ");
-        String flavor = scanner.nextLine();
+    public void printTitle(String title) {
+        System.out.println(CYAN + BOX_BORDER + RESET);
+        System.out.println(CYAN + " " + title + " ");
+        System.out.println(CYAN + BOX_BOTTOM + RESET);
+    }
 
-        return new Drink(size, flavor);
+    private void displayLoading() {
+        String[] animation = {"|", "/", "-", "\\"};
+        for (int i = 0; i < 10; i++) {
+            try {
+                System.out.print("\r" + BLUE + "Processing " + animation[i % 4] + RESET);
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        System.out.println("\r" + GREEN + "Done!" + RESET);
     }
 }

@@ -1,6 +1,9 @@
 package com.pluralsight;
 
+import java.io.IOException;
+
 public class Main {
+
     public static void main(String [] args) {
         //Initializes the user interface
         UserInterface userInterface = new UserInterface();

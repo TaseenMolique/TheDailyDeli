@@ -5,70 +5,85 @@ import java.util.List;
 
 public class Order {
     private List<Sandwich> sandwiches;
-    private List<Drink> drinks;
-    private List<String> chips;
+    private List<String> drinks;
+    private boolean hasChips;
 
     public Order() {
         this.sandwiches = new ArrayList<>();
         this.drinks = new ArrayList<>();
-        this.chips = new ArrayList<>();
+        this.hasChips = false;
     }
 
-    //Adds a sandwich to the order
+    // Adds a sandwich to the order
     public void addSandwich(Sandwich sandwich) {
         sandwiches.add(sandwich);
     }
 
-    //Adds a drink to the order
-    public void addDrink(Drink drink) {
-        drinks.add(drink);
+    // Adds chips to the order
+    public void addChips() {
+        this.hasChips = true;
     }
 
-    //Adds chips to the order
-    public void addChips(String chipType){
-        chips.add(chipType);
+    // Adds a drink to the order
+    public void addDrink(String size) {
+        drinks.add(size);
     }
 
-    //Calculates the total price of the order by adding up the prices of all items
+    // Calculates the total price of the order by adding up the prices of all items
     public double calculateTotalPrice() {
         double totalPrice = 0;
 
-        //Add prices for all sandwiches
+        // Add prices for all sandwiches
         for (Sandwich sandwich : sandwiches) {
             totalPrice += sandwich.calculatePrice();
         }
 
-        //Add prices for all drinks
-        for (Drink drink : drinks) {
-            totalPrice += drink.getPrice();
+        // Add chips price if included
+        if (hasChips) totalPrice += Pricing.getChipsPrice();
+
+        // Add prices for each drink based on size
+        for (String drinkSize : drinks) {
+            totalPrice += Pricing.getDrinkPrice(drinkSize);
         }
-
-        //Add price for all chips
-        totalPrice += chips.size() * Pricing.getChipsPrice();
-
         return totalPrice;
     }
 
-    //Retrieves a string with the order for displaying / receipt purposes
-    public String getOrderDetails() {
-        StringBuilder details = new StringBuilder("Order Details:\n");
+    // Retrieves a string with the order for displaying / receipt purposes
+    public String getReceiptDetails() {
+        StringBuilder receipt = new StringBuilder();
+        receipt.append("Order Summary:\n");
 
-        //append details of each sandwich
+        int sandwichCount = 1;
         for (Sandwich sandwich : sandwiches) {
-            details.append(sandwich.getDetails()).append("\n");
+            receipt.append("Sandwich ").append(sandwichCount++).append(": ").append(sandwich.getDetails()).append("\n");
         }
 
-        for (Drink drink : drinks) {
-            details.append("Drink: ").append(drink.getSize()).append(" - ").append(drink.getFlavor()).append("\n");
+        if (hasChips) {
+            receipt.append("Chips: ").append(Pricing.getChipsPrice()).append("\n");
         }
 
-        for (String chip : chips) {
-            details.append("Chips: ").append(chip).append("\n");
+        int drinkCount = 1;
+        for (String drinkSize : drinks) {
+            receipt.append("Drink ").append(drinkCount++).append(" (").append(drinkSize).append("): ")
+                    .append(Pricing.getDrinkPrice(drinkSize)).append("\n");
         }
 
-        //Append total price
-        details.append("Total Price: $").append(calculateTotalPrice()).append("\n");
+        receipt.append("Total: $").append(String.format("%.2f", calculateTotalPrice()));
+        return receipt.toString();
+    }
 
-        return details.toString();
+    // Getter for sandwiches list
+    public List<Sandwich> getSandwiches() {
+        return sandwiches;
+    }
+
+    // Getter for drinks list
+    public List<String> getDrinks() {
+        return drinks;
+    }
+
+    // Check if the order includes chips
+    public boolean hasChips() {
+        return hasChips;
     }
 }
