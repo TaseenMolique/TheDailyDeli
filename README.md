@@ -57,8 +57,8 @@ The Daily Deli is a Java-based Point of Sales (POS) application designed for DEL
 ********** The Daily Deli **********
 =====================================
 Receipt #20241115
-Date: 11/15/2024
-Time: 02:27 AM
+Date: 11/14/2024
+Time: 02:27 PM
 -------------------------------------
 Sandwiches:
 1. 12" on White Bread
