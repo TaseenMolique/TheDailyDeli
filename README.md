@@ -72,8 +72,8 @@ Toppings:
 - Cucumbers (Regular)
 - Mayo (Regular)
  - $14.00
-Chips: $1.5
-Drinks:
+- Chips: $1.5
+- Drinks:
 1. Large - $3.00
 -------------------------------------
 Total: $18.50
